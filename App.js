@@ -9,7 +9,14 @@ import {createStore} from 'redux';
 import {Provider} from 'react-redux';
 import reducers from './reducers';
 
-const initialState = {};
+const initialState = { // app state in Store
+    contactList: [/*{
+        name: { first: "Aleksandra123", last: "Kitty" },
+        email: "a@ukr.net",
+        picture: { thumbnail: "https://xjedi.com/forum/uploads/av-5.jpg" }
+    }*/],
+    selectedContactIndex: -1
+};
 const store = createStore(reducers, initialState);
 
 const MainNavigator = createStackNavigator({
@@ -29,10 +36,6 @@ export default class App extends React.Component {
         );
     }
 }
-
-
-
-export default App;
 
 
 

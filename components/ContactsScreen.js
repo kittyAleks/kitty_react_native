@@ -1,42 +1,39 @@
 import React, { Component } from "react";
-import {  FlatList } from "react-native";
-import { ListItem } from 'react-native-elements'
+import { FlatList } from "react-native";
+import { ListItem } from 'react-native-elements';
+import { connect } from 'react-redux';
+import { contactsUpdatedAction, contactSelectedAction } from "../actions";
 
-class ContactsListView extends Component {
+const mapStateToProps = (state) => ({
+    contactList: state.contactList
+});
+
+const mapDispatchToProps = (dispatch) => ({
+    contactsUpdated(contactList) {
+        dispatch(contactsUpdatedAction(contactList));
+    },
+    contactSelected(selectedContactIndex) {
+        dispatch(contactSelectedAction(selectedContactIndex));
+    }
+});
+
+class ContactsScreen extends Component {
     constructor(props) {
         super(props);
-
-        this.state = {
-            loading: false,
-            data: [],
-            seed: 1,
-            error: null,
-            refreshing: false,
-        };
-    }
-
-    componentDidMount() {
-        this.makeRemoteRequest();
+        if(this.props.contactList && this.props.contactList.length === 0) {
+            this.makeRemoteRequest();
+        }
     }
 
     makeRemoteRequest = () => {
-        const { seed } = this.state;
+        const seed = 1;
         const url = `https://randomuser.me/api/?seed=${seed}&results=20`;
-        console.log(`[QQQ] makeRemoteRequest: ${url}`);
-        this.setState({ loading: true });
         fetch(url)
             .then(res => res.json())
             .then(res => {
-                this.setState({
-                    data: res.results,
-                    error: res.error || null,
-                    loading: false,
-                    refreshing: false
-                });
-                //console.log("[QQQ] " + JSON.stringify(res.results));
+                this.props.contactsUpdated(res.results);
             })
             .catch(error => {
-                this.setState({ error, loading: false });
             });
     };
 
@@ -44,14 +41,15 @@ class ContactsListView extends Component {
         const {navigate} = this.props.navigation;
         return (
             <FlatList
-                data={this.state.data}
-                renderItem={({ item }) => (
+                data={this.props.contactList}
+                renderItem={({ item, index }) => (
                     <ListItem
                         title={`${item.name.first} ${item.name.last}`}
                         subtitle={item.email}
                         leftAvatar={{ source: { uri: item.picture.thumbnail }}}
                         onPress={() => {
-                            navigate('ImagePicker')
+                            this.props.contactSelected(index);
+                            navigate('ImagePicker');
                         }}
                     />
                 )}
@@ -61,4 +59,7 @@ class ContactsListView extends Component {
     }
 }
 
-export default ContactsListView;
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(ContactsScreen);
